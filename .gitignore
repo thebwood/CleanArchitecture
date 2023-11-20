@@ -4,3 +4,7 @@
 
 /CleanArchitecture/.vs/CleanArchitecture
 /.vs
+/CleanArchitecture/.vs/ProjectEvaluation
+/CleanArchitecture/CleanArchitecture.API/obj
+/CleanArchitecture/CleanArchitecture.Domain/obj
+/CleanArchitecture/CleanArchitecture.Infrastructure/obj
