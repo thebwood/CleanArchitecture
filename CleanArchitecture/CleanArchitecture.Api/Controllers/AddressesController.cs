@@ -1,5 +1,6 @@
 ﻿using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,10 +14,17 @@ namespace CleanArchitecture.Api.Controllers
     public class AddressesController : ControllerBase
     {
         private readonly IAddressService _addressService;
+        private readonly IValidator<CreateAddressDto> _createValidator;
+        private readonly IValidator<UpdateAddressDto> _updateValidator;
 
-        public AddressesController(IAddressService addressService)
+        public AddressesController(
+            IAddressService addressService,
+            IValidator<CreateAddressDto> createValidator,
+            IValidator<UpdateAddressDto> updateValidator)
         {
             _addressService = addressService;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         /// <summary>
@@ -68,8 +76,11 @@ namespace CleanArchitecture.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddressDto>> Create([FromBody] CreateAddressDto createAddressDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var validationResult = await _createValidator.ValidateAsync(createAddressDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.ToDictionary());
+            }
 
             var result = await _addressService.CreateAddressAsync(createAddressDto);
             
@@ -94,8 +105,11 @@ namespace CleanArchitecture.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AddressDto>> Update(Guid id, [FromBody] UpdateAddressDto updateAddressDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var validationResult = await _updateValidator.ValidateAsync(updateAddressDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.ToDictionary());
+            }
 
             var result = await _addressService.UpdateAddressAsync(id, updateAddressDto);
             

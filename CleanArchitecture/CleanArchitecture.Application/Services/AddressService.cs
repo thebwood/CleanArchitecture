@@ -33,12 +33,6 @@ public class AddressService : IAddressService
 
     public async Task<Result<AddressDto>> CreateAddressAsync(CreateAddressDto createAddressDto)
     {
-        if (string.IsNullOrWhiteSpace(createAddressDto.Street))
-            return Result.Failure<AddressDto>("Street is required.");
-        
-        if (string.IsNullOrWhiteSpace(createAddressDto.City))
-            return Result.Failure<AddressDto>("City is required.");
-
         var address = new Address
         {
             Id = Guid.NewGuid(),
@@ -59,12 +53,6 @@ public class AddressService : IAddressService
         var existingAddress = await _addressRepository.GetByIdAsync(id);
         if (existingAddress == null)
             return Result.Failure<AddressDto>($"Address with ID {id} not found.");
-
-        if (string.IsNullOrWhiteSpace(updateAddressDto.Street))
-            return Result.Failure<AddressDto>("Street is required.");
-        
-        if (string.IsNullOrWhiteSpace(updateAddressDto.City))
-            return Result.Failure<AddressDto>("City is required.");
 
         existingAddress.Street = updateAddressDto.Street;
         existingAddress.City = updateAddressDto.City;
