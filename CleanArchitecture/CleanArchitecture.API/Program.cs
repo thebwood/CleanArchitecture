@@ -32,9 +32,43 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
-// Add CORS (configure as needed)
+// Add CORS - Configure for multiple clients
 builder.Services.AddCors(options =>
 {
+    // React App Policy
+    options.AddPolicy("ReactClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .WithExposedHeaders("X-Correlation-ID");
+    });
+
+    // Blazor App Policy
+    options.AddPolicy("BlazorClient", policy =>
+    {
+        policy.WithOrigins("https://localhost:7220", "http://localhost:5220")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .WithExposedHeaders("X-Correlation-ID");
+    });
+
+    // Combined Policy for Development (allows both React and Blazor)
+    options.AddPolicy("DevelopmentClients", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",           // React
+                "https://localhost:7220",          // Blazor HTTPS
+                "http://localhost:5220")           // Blazor HTTP
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .WithExposedHeaders("X-Correlation-ID");
+    });
+
+    // Keep AllowAll for testing only
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
@@ -73,8 +107,8 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 // Response compression
 app.UseResponseCompression();
 
-// CORS
-app.UseCors("AllowAll");
+// CORS - Use the DevelopmentClients policy (allows both React and Blazor)
+app.UseCors("DevelopmentClients");
 
 if (app.Environment.IsDevelopment())
 {
